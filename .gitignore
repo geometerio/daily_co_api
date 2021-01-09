@@ -25,3 +25,7 @@ daily_co_api-*.tar
 
 # Temporary files for e.g. tests
 /tmp
+
+*.iml
+.idea
+.DS_Store
