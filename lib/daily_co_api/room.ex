@@ -7,10 +7,7 @@ defmodule DailyCoAPI.Room do
     {:ok, response |> Jason.decode!() |> extract_fields()}
   end
 
-  defp headers() do
-    ["Authorization: Bearer "]
-  end
-
+  defp headers(), do: ["Authorization: Bearer #{daily_co_api_key()}"]
   defp daily_co_api_key(), do: Application.fetch_env!(:daily_co_api, :api_key)
 
   defp extract_fields(json) do
