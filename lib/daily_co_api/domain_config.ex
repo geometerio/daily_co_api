@@ -1,4 +1,4 @@
-defmodule DailyCoAPI.Config do
+defmodule DailyCoAPI.DomainConfig do
   @http_client Application.compile_env!(:daily_co_api, :http_client)
   @daily_co_api_endpoint Application.compile_env!(:daily_co_api, :api_endpoint)
 

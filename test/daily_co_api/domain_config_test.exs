@@ -1,8 +1,8 @@
-defmodule DailyCoAPI.ConfigTest do
+defmodule DailyCoAPI.DomainConfigTest do
   use ExUnit.Case
   doctest DailyCoAPI
 
-  alias DailyCoAPI.Config
+  alias DailyCoAPI.DomainConfig
   alias DailyCoAPI.HTTPoisonMock
 
   import Mox
@@ -13,11 +13,11 @@ defmodule DailyCoAPI.ConfigTest do
       assert url == "https://api.daily.co/v1/"
       [{:Authorization, auth}] = headers
       assert Regex.match?(~r/Bearer \w{64,}/, auth)
-      json_response = File.read!("test/daily_co_api/config_response.json")
+      json_response = File.read!("test/daily_co_api/domain_config_response.json")
       {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
     end)
 
-    {:ok, config} = Config.get()
+    {:ok, config} = DomainConfig.get()
 
     expected = %{
       domain_name: "your-domain"
