@@ -3,11 +3,12 @@ defmodule DailyCoAPI.Room do
   @daily_co_api_endpoint Application.compile_env!(:daily_co_api, :api_endpoint)
 
   def list_all() do
-    {:ok, %{body: response}} = @http_client.get(@daily_co_api_endpoint, headers())
+    {:ok, %{body: response}} = @http_client.get(list_all_url(), headers())
     {:ok, response |> Jason.decode!() |> extract_fields()}
   end
 
-  defp headers(), do: ["Authorization: Bearer #{daily_co_api_key()}"]
+  defp list_all_url(), do: @daily_co_api_endpoint <> "rooms"
+  defp headers(), do: [Authorization: "Bearer #{daily_co_api_key()}"]
   defp daily_co_api_key(), do: Application.fetch_env!(:daily_co_api, :api_key)
 
   defp extract_fields(json) do

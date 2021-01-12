@@ -10,9 +10,9 @@ defmodule DailyCoAPI.RoomTest do
 
   test "list_all/0" do
     expect(HTTPoisonMock, :get, fn url, headers ->
-      assert url == "https://api.daily.co/v1/"
+      assert url == "https://api.daily.co/v1/rooms"
       [header] = headers
-      assert Regex.match?(~r/Authorization: Bearer \w{64,}$/, header)
+      assert header == {:Authorization, "Bearer "}
       json_response = File.read!("test/daily_co_api/room_list_all_response.json")
       {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
     end)
