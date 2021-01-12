@@ -23,11 +23,7 @@ defmodule DailyCoAPI.DomainConfigTest do
 
       {:ok, config} = DomainConfig.get()
 
-      expected = %{
-        domain_name: "your-domain"
-      }
-
-      assert config == expected
+      assert config == expected_config()
     end
 
     test "unauthorized" do
@@ -43,5 +39,29 @@ defmodule DailyCoAPI.DomainConfigTest do
 
       {:error, :unauthorized} = DomainConfig.get()
     end
+  end
+
+  defp expected_config() do
+    %{
+      domain_name: "your-domain",
+      config: %{
+        hide_daily_branding: true,
+        redirect_on_meeting_exit: "",
+        meeting_join_hook: "",
+        hipaa: false,
+        intercom_auto_record: false,
+        intercom_manual_record: "",
+        sfu_impl: "s",
+        signaling_impl: "ks",
+        sfu_switchover: nil,
+        switchover_impl: nil,
+        lang: nil,
+        callstats: nil,
+        max_api_rooms: nil,
+        webhook_meeting_end: nil,
+        max_live_streams: 2,
+        enable_daily_logger: true
+      }
+    }
   end
 end
