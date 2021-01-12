@@ -10,7 +10,17 @@ defmodule DailyCoAPI.Room do
     end
   end
 
+  def get(room_name) do
+    {:ok, http_response} = HTTP.client().get(room_url(room_name), HTTP.headers())
+
+    case http_response do
+      %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
+      %{status_code: 401} -> {:error, :unauthorized}
+    end
+  end
+
   defp list_all_url(), do: HTTP.daily_co_api_endpoint() <> "rooms"
+  defp room_url(room_name), do: HTTP.daily_co_api_endpoint() <> "rooms/#{room_name}"
 
   defp extract_fields(json) do
     room_data = for room_json <- json["data"], into: [], do: extract_room_data(room_json)
