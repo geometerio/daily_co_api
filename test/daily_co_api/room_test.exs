@@ -1,6 +1,6 @@
 defmodule DailyCoAPI.RoomTest do
-  use ExUnit.Case
-  doctest DailyCoAPI
+  use ExUnit.Case, async: true
+  import DailyCoAPI.TestSupport.Assertions
 
   alias DailyCoAPI.Room
   alias DailyCoAPI.HTTPoisonMock
@@ -11,8 +11,7 @@ defmodule DailyCoAPI.RoomTest do
   test "list_all/0" do
     expect(HTTPoisonMock, :get, fn url, headers ->
       assert url == "https://api.daily.co/v1/rooms"
-      [{:Authorization, auth}] = headers
-      assert Regex.match?(~r/Bearer \w{64,}/, auth)
+      assert_correct_headers(headers)
       json_response = File.read!("test/daily_co_api/room_list_all_response.json")
       {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
     end)
