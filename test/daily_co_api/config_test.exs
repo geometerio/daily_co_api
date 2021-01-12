@@ -11,8 +11,8 @@ defmodule DailyCoAPI.ConfigTest do
   test "get/0" do
     expect(HTTPoisonMock, :get, fn url, headers ->
       assert url == "https://api.daily.co/v1/"
-      [header] = headers
-      assert header == {:Authorization, "Bearer "}
+      [{:Authorization, auth}] = headers
+      assert Regex.match?(~r/Bearer \w{64,}/, auth)
       json_response = File.read!("test/daily_co_api/config_response.json")
       {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
     end)
