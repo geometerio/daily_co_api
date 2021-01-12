@@ -8,20 +8,40 @@ defmodule DailyCoAPI.DomainConfigTest do
   import Mox
   setup :verify_on_exit!
 
-  test "get/0" do
-    expect(HTTPoisonMock, :get, fn url, headers ->
-      assert url == "https://api.daily.co/v1/"
-      assert_correct_headers(headers)
-      json_response = File.read!("test/daily_co_api/domain_config_response.json")
-      {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
-    end)
+  describe "get/0" do
+    test "success" do
+      expect(
+        HTTPoisonMock,
+        :get,
+        fn url, headers ->
+          assert url == "https://api.daily.co/v1/"
+          assert_correct_headers(headers)
+          json_response = File.read!("test/daily_co_api/domain_config_response.json")
+          {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
+        end
+      )
 
-    {:ok, config} = DomainConfig.get()
+      {:ok, config} = DomainConfig.get()
 
-    expected = %{
-      domain_name: "your-domain"
-    }
+      expected = %{
+        domain_name: "your-domain"
+      }
 
-    assert config == expected
+      assert config == expected
+    end
+
+    test "unauthorized" do
+      expect(
+        HTTPoisonMock,
+        :get,
+        fn url, headers ->
+          assert url == "https://api.daily.co/v1/"
+          assert_correct_headers(headers)
+          {:ok, %HTTPoison.Response{status_code: 401, body: ""}}
+        end
+      )
+
+      {:error, :unauthorized} = DomainConfig.get()
+    end
   end
 end

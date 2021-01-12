@@ -1,2 +1,1 @@
-export DAILY_CO_SUBDOMAIN="your-domain"
 export DAILY_CO_API_KEY="get from https://dashboard.daily.co/developers"
