@@ -19,11 +19,7 @@ defmodule DailyCoAPI.RoomTest do
 
       {:ok, room_data} = Room.list_all()
 
-      expected = %{
-        total_count: 2
-      }
-
-      assert room_data == expected
+      assert room_data == expected_room_list_all_response()
     end
 
     test "unauthorized" do
@@ -34,6 +30,32 @@ defmodule DailyCoAPI.RoomTest do
       end)
 
       {:error, :unauthorized} = Room.list_all()
+    end
+
+    defp expected_room_list_all_response() do
+      %{
+        total_count: 2,
+        rooms: [
+          %{
+            id: "5e3cf703-5547-47d6-a371-37b1f0b4427f",
+            name: "w2pp2cf4kltgFACPKXmX",
+            api_created: false,
+            privacy: "public",
+            url: "https://api-demo.daily.co/w2pp2cf4kltgFACPKXmX",
+            created_at: ~N[2019-01-26T09:01:22.000Z],
+            config: %{start_video_off: true}
+          },
+          %{
+            id: "d61cd7b2-a273-42b4-89bd-be763fd562c1",
+            name: "hello",
+            api_created: false,
+            privacy: "public",
+            url: "https://your-domain.daily.co/hello",
+            created_at: ~N[2019-01-25T23:49:42.000Z],
+            config: %{}
+          }
+        ]
+      }
     end
   end
 end
