@@ -16,6 +16,7 @@ defmodule DailyCoAPI.Room do
     case http_response do
       %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
       %{status_code: 401} -> {:error, :unauthorized}
+      %{status_code: 404} -> {:error, :not_found}
     end
   end
 

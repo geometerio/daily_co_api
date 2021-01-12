@@ -83,6 +83,21 @@ defmodule DailyCoAPI.RoomTest do
       {:error, :unauthorized} = Room.get("my-room")
     end
 
+    test "not found" do
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms/does-not-exist"
+        assert_correct_headers(headers)
+
+        {:ok,
+         %HTTPoison.Response{
+           status_code: 404,
+           body: "{\"error\":\"not-found\",\"info\":\"room does-not-exist  not found\"}"
+         }}
+      end)
+
+      {:error, :not_found} = Room.get("does-not-exist")
+    end
+
     defp expected_room_data() do
       %{
         api_created: false,
