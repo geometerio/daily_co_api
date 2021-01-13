@@ -1,9 +1,0 @@
-{
-  "exp": 1548633621,
-  "room_name": "my-new-room",
-  "user_name": "A. User",
-  "is_owner": true,
-  "close_tab_on_exit": true,
-  "enable_recording": "cloud",
-  "start_video_off": true
-}

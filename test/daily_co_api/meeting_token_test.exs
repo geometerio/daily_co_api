@@ -13,22 +13,22 @@ defmodule DailyCoAPI.MeetingTokenTest do
       expect(HTTPoisonMock, :post, fn url, body, headers ->
         assert url == "https://api.daily.co/v1/meeting-tokens"
         assert_correct_headers(headers)
-        assert body == "{\"room_name\":\"my-new-room\"}"
-        json_response = File.read!("test/daily_co_api/meeting_token_response.json")
+        assert body == ~S|{"properties":{"room_name":"my-new-room"}}|
+        json_response = ~S|{"token": "abcdefg1234"}|
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
       params = %{room_name: "my-new-room"}
 
       {:ok, meeting_token} = MeetingToken.create(params)
-      assert meeting_token == expected_meeting_token()
+      assert meeting_token == "abcdefg1234"
     end
 
     test "gives an error if invalid parameters are given" do
       expect(HTTPoisonMock, :post, fn url, body, headers ->
         assert url == "https://api.daily.co/v1/meeting-tokens"
         assert_correct_headers(headers)
-        assert body == "{\"invalid\":\"parameter\"}"
+        assert body == "{\"properties\":{\"invalid\":\"parameter\"}}"
         json_response = "{\"error\":\"invalid-request-error\",\"info\":\"unknown parameter 'invalid'\"}"
         {:ok, %HTTPoison.Response{status_code: 400, body: json_response}}
       end)
@@ -49,16 +49,16 @@ defmodule DailyCoAPI.MeetingTokenTest do
       {:error, :unauthorized} = MeetingToken.create(%{})
     end
 
-    defp expected_meeting_token() do
-      %{
-        exp: 1_548_633_621,
-        room_name: "my-new-room",
-        user_name: "A. User",
-        is_owner: true,
-        close_tab_on_exit: true,
-        enable_recording: "cloud",
-        start_video_off: true
-      }
+    test "server error" do
+      expect(HTTPoisonMock, :post, fn url, _body, headers ->
+        assert url == "https://api.daily.co/v1/meeting-tokens"
+        assert_correct_headers(headers)
+        json_response = "{\"error\":\"server-error\"}"
+        {:ok, %HTTPoison.Response{status_code: 500, body: json_response}}
+      end)
+
+      {:error, :server_error, error_message} = MeetingToken.create(%{room_name: "my-room-name"})
+      assert error_message == "server-error"
     end
   end
 
