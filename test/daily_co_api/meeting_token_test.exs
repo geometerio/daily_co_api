@@ -86,6 +86,17 @@ defmodule DailyCoAPI.MeetingTokenTest do
       assert response == {:error, :invalid_meeting_token}
     end
 
+    test "gives a server error if something goes wrong" do
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/meeting-tokens/invalid-meeting-token"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 500, body: "{\"error\":\"server-error\"}"}}
+      end)
+
+      response = MeetingToken.validate("invalid-meeting-token")
+      assert response == {:error, :server_error, "server-error"}
+    end
+
     test "unauthorized" do
       expect(HTTPoisonMock, :get, fn url, headers ->
         assert url == "https://api.daily.co/v1/meeting-tokens/valid-meeting-token"

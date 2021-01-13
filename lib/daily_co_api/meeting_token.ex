@@ -20,6 +20,7 @@ defmodule DailyCoAPI.MeetingToken do
       %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> validated_meeting_token()}
       %{status_code: 400} -> {:error, :invalid_meeting_token}
       %{status_code: 401} -> {:error, :unauthorized}
+      %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
     end
   end
 
