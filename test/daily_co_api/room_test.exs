@@ -176,4 +176,36 @@ defmodule DailyCoAPI.RoomTest do
       }
     end
   end
+
+  describe "delete/1" do
+    test "success" do
+      expect(HTTPoisonMock, :delete, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms/some-room"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 200, body: ""}}
+      end)
+
+      assert Room.delete("some-room") == :ok
+    end
+
+    test "unauthorized" do
+      expect(HTTPoisonMock, :delete, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms/some-room"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 401, body: ""}}
+      end)
+
+      {:error, :unauthorized} = Room.delete("some-room")
+    end
+
+    test "room does not exist" do
+      expect(HTTPoisonMock, :delete, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms/nonexistent-room"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 404, body: ""}}
+      end)
+
+      {:error, :not_found} = Room.delete("nonexistent-room")
+    end
+  end
 end
