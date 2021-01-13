@@ -126,6 +126,19 @@ defmodule DailyCoAPI.RoomTest do
       assert room_data == expected_room_data()
     end
 
+    test "success - works with no params" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        assert body == "{}"
+        json_response = File.read!("test/daily_co_api/room_create_response.json")
+        {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
+      end)
+
+      {:ok, room_data} = Room.create()
+      assert room_data == expected_room_data_on_create()
+    end
+
     test "gives an error if invalid parameters are given" do
       expect(HTTPoisonMock, :post, fn url, body, headers ->
         assert url == "https://api.daily.co/v1/rooms"
@@ -142,7 +155,7 @@ defmodule DailyCoAPI.RoomTest do
     end
 
     test "unauthorized" do
-      expect(HTTPoisonMock, :post, fn url, body, headers ->
+      expect(HTTPoisonMock, :post, fn url, _body, headers ->
         assert url == "https://api.daily.co/v1/rooms"
         assert_correct_headers(headers)
         {:ok, %HTTPoison.Response{status_code: 401, body: ""}}
@@ -151,7 +164,7 @@ defmodule DailyCoAPI.RoomTest do
       {:error, :unauthorized} = Room.create(%{})
     end
 
-    defp expected_room_data() do
+    defp expected_room_data_on_create() do
       %{
         api_created: true,
         config: %{start_video_off: true},

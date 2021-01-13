@@ -20,7 +20,7 @@ defmodule DailyCoAPI.Room do
     end
   end
 
-  def create(params) do
+  def create(params \\ %{}) do
     {:ok, http_response} = HTTP.client().post(create_room_url(), params |> Jason.encode!(), HTTP.headers())
 
     case http_response do
