@@ -1,7 +1,7 @@
 defmodule DailyCoAPI.Room do
   alias DailyCoAPI.HTTP
 
-  def list_all() do
+  def list() do
     {:ok, http_response} = HTTP.client().get(list_all_url(), HTTP.headers())
 
     case http_response do

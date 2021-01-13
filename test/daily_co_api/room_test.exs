@@ -8,18 +8,18 @@ defmodule DailyCoAPI.RoomTest do
   import Mox
   setup :verify_on_exit!
 
-  describe "list_all/0" do
+  describe "list/0" do
     test "success" do
       expect(HTTPoisonMock, :get, fn url, headers ->
         assert url == "https://api.daily.co/v1/rooms"
         assert_correct_headers(headers)
-        json_response = File.read!("test/daily_co_api/room_list_all_response.json")
+        json_response = File.read!("test/daily_co_api/room_list_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
-      {:ok, room_data} = Room.list_all()
+      {:ok, room_data} = Room.list()
 
-      assert room_data == expected_room_list_all_response()
+      assert room_data == expected_room_list_response()
     end
 
     test "unauthorized" do
@@ -29,10 +29,10 @@ defmodule DailyCoAPI.RoomTest do
         {:ok, %HTTPoison.Response{status_code: 401, body: ""}}
       end)
 
-      {:error, :unauthorized} = Room.list_all()
+      {:error, :unauthorized} = Room.list()
     end
 
-    defp expected_room_list_all_response() do
+    defp expected_room_list_response() do
       %{
         total_count: 2,
         rooms: [
