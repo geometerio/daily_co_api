@@ -10,16 +10,12 @@ defmodule DailyCoAPI.DomainConfigTest do
 
   describe "get/0" do
     test "success" do
-      expect(
-        HTTPoisonMock,
-        :get,
-        fn url, headers ->
-          assert url == "https://api.daily.co/v1/"
-          assert_correct_headers(headers)
-          json_response = File.read!("test/daily_co_api/domain_config_response.json")
-          {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
-        end
-      )
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/"
+        assert_correct_headers(headers)
+        json_response = File.read!("test/daily_co_api/domain_config_response.json")
+        {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
+      end)
 
       {:ok, config} = DomainConfig.get()
 
@@ -27,18 +23,25 @@ defmodule DailyCoAPI.DomainConfigTest do
     end
 
     test "unauthorized" do
-      expect(
-        HTTPoisonMock,
-        :get,
-        fn url, headers ->
-          assert url == "https://api.daily.co/v1/"
-          assert_correct_headers(headers)
-          {:ok, %HTTPoison.Response{status_code: 401, body: ""}}
-        end
-      )
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 401, body: ""}}
+      end)
 
       {:error, :unauthorized} = DomainConfig.get()
     end
+  end
+
+  test "gives a server error if something goes wrong" do
+    expect(HTTPoisonMock, :get, fn url, headers ->
+      assert url == "https://api.daily.co/v1/"
+      assert_correct_headers(headers)
+      {:ok, %HTTPoison.Response{status_code: 500, body: "{\"error\":\"server-error\"}"}}
+    end)
+
+    response = DomainConfig.get()
+    assert response == {:error, :server_error, "server-error"}
   end
 
   defp expected_config() do

@@ -32,6 +32,17 @@ defmodule DailyCoAPI.RoomTest do
       {:error, :unauthorized} = Room.list()
     end
 
+    test "gives a server error if something goes wrong" do
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 500, body: "{\"error\":\"server-error\"}"}}
+      end)
+
+      response = Room.list()
+      assert response == {:error, :server_error, "server-error"}
+    end
+
     defp expected_room_list_response() do
       %{
         total_count: 2,
@@ -95,6 +106,17 @@ defmodule DailyCoAPI.RoomTest do
       end)
 
       {:error, :not_found} = Room.get("does-not-exist")
+    end
+
+    test "gives a server error if something goes wrong" do
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms/my-room"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 500, body: "{\"error\":\"server-error\"}"}}
+      end)
+
+      response = Room.get("my-room")
+      assert response == {:error, :server_error, "server-error"}
     end
 
     defp expected_room_data() do
@@ -164,6 +186,17 @@ defmodule DailyCoAPI.RoomTest do
       {:error, :unauthorized} = Room.create(%{})
     end
 
+    test "gives a server error if something goes wrong" do
+      expect(HTTPoisonMock, :post, fn url, _body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 500, body: "{\"error\":\"server-error\"}"}}
+      end)
+
+      response = Room.create()
+      assert response == {:error, :server_error, "server-error"}
+    end
+
     defp expected_room_data_on_create() do
       %{
         api_created: true,
@@ -206,6 +239,17 @@ defmodule DailyCoAPI.RoomTest do
       end)
 
       {:error, :not_found} = Room.delete("nonexistent-room")
+    end
+
+    test "gives a server error if something goes wrong" do
+      expect(HTTPoisonMock, :delete, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms/my-room"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 500, body: "{\"error\":\"server-error\"}"}}
+      end)
+
+      response = Room.delete("my-room")
+      assert response == {:error, :server_error, "server-error"}
     end
   end
 end
