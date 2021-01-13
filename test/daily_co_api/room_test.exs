@@ -69,7 +69,6 @@ defmodule DailyCoAPI.RoomTest do
       end)
 
       {:ok, room_data} = Room.get("my-room")
-
       assert room_data == expected_room_data()
     end
 
@@ -107,6 +106,60 @@ defmodule DailyCoAPI.RoomTest do
         name: "my-room",
         privacy: "public",
         url: "https://api-demo.daily.co/w2pp2cf4kltgFACPKXmX"
+      }
+    end
+  end
+
+  describe "create/1" do
+    test "success" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        assert body == "{\"name\":\"my-new-room\"}"
+        json_response = File.read!("test/daily_co_api/room_response.json")
+        {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
+      end)
+
+      params = %{name: "my-new-room"}
+
+      {:ok, room_data} = Room.create(params)
+      assert room_data == expected_room_data()
+    end
+
+    test "gives an error if invalid parameters are given" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        assert body == "{\"invalid\":\"parameter\"}"
+        json_response = "{\"error\":\"invalid-request-error\",\"info\":\"unknown parameter 'invalid'\"}"
+        {:ok, %HTTPoison.Response{status_code: 400, body: json_response}}
+      end)
+
+      params = %{invalid: "parameter"}
+
+      response = Room.create(params)
+      assert response == {:error, :invalid_data, %{"error" => "invalid-request-error", "info" => "unknown parameter 'invalid'"}}
+    end
+
+    test "unauthorized" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        {:ok, %HTTPoison.Response{status_code: 401, body: ""}}
+      end)
+
+      {:error, :unauthorized} = Room.create(%{})
+    end
+
+    defp expected_room_data() do
+      %{
+        api_created: true,
+        config: %{start_video_off: true},
+        created_at: ~N[2019-01-26 09:01:22.000],
+        id: "d61cd7b2-a273-42b4-89bd-be763fd562c1",
+        name: "my-new-room",
+        privacy: "public",
+        url: "https://api-demo.daily.co/my-new-room"
       }
     end
   end

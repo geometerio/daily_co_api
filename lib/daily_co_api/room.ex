@@ -20,8 +20,19 @@ defmodule DailyCoAPI.Room do
     end
   end
 
+  def create(params) do
+    {:ok, http_response} = HTTP.client().post(create_room_url(), params |> Jason.encode!(), HTTP.headers())
+
+    case http_response do
+      %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
+      %{status_code: 400, body: json_response} -> {:error, :invalid_data, json_response |> Jason.decode!()}
+      %{status_code: 401} -> {:error, :unauthorized}
+    end
+  end
+
   defp list_all_url(), do: HTTP.daily_co_api_endpoint() <> "rooms"
   defp room_url(room_name), do: HTTP.daily_co_api_endpoint() <> "rooms/#{room_name}"
+  defp create_room_url(), do: HTTP.daily_co_api_endpoint() <> "rooms"
 
   defp extract_fields(json) do
     room_data = for room_json <- json["data"], into: [], do: extract_room_data(room_json)
