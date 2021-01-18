@@ -22,12 +22,14 @@ defmodule DailyCoAPI.Room do
     end
   end
 
+  @valid_create_params [:name, :exp]
+
   def create(params \\ %{})
 
   def create(params) when is_list(params), do: params |> Map.new() |> create()
 
   def create(params) when is_map(params) do
-    case params |> check_for_valid_params() do
+    case params |> Params.check_for_valid_params(@valid_create_params) do
       {:ok, valid_params} ->
         json_params =
           valid_params |> convert_to_proper_format() |> Params.filter_out_nil_keys() |> default_to_empty_map() |> Jason.encode!()
@@ -69,18 +71,6 @@ defmodule DailyCoAPI.Room do
       total_count: json["total_count"],
       rooms: room_data
     }
-  end
-
-  @valid_params MapSet.new([:name, :exp])
-
-  def check_for_valid_params(params) do
-    invalid_params = params |> Map.keys() |> Enum.reject(&MapSet.member?(@valid_params, &1))
-
-    if length(invalid_params) > 0 do
-      {:error, :invalid_params, invalid_params}
-    else
-      {:ok, params}
-    end
   end
 
   defp convert_to_proper_format(params) do

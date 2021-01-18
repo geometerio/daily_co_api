@@ -34,4 +34,20 @@ defmodule DailyCoAPI.ParamsTest do
       assert filtered == %{b: 2, properties: %{foo: %{bar: "baz"}}}
     end
   end
+
+  describe "check_for_valid_params" do
+    test "returns :ok if the params are valid" do
+      valid_params = [:a, :b]
+
+      params = %{a: 3}
+      assert Params.check_for_valid_params(params, valid_params) == {:ok, %{a: 3}}
+    end
+
+    test "returns :error if the params are invalid" do
+      valid_params = [:a, :b]
+
+      params = %{c: 3}
+      assert Params.check_for_valid_params(params, valid_params) == {:error, :invalid_params, [:c]}
+    end
+  end
 end

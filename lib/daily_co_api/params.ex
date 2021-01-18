@@ -10,4 +10,15 @@ defmodule DailyCoAPI.Params do
 
   def convert_back_to_map([]), do: nil
   def convert_back_to_map(non_empty_list), do: non_empty_list |> Map.new()
+
+  def check_for_valid_params(params, valid_params) do
+    valid_params = MapSet.new(valid_params)
+    invalid_params = params |> Map.keys() |> Enum.reject(&MapSet.member?(valid_params, &1))
+
+    if length(invalid_params) > 0 do
+      {:error, :invalid_params, invalid_params}
+    else
+      {:ok, params}
+    end
+  end
 end
