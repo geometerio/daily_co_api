@@ -38,18 +38,8 @@ defmodule DailyCoAPI.MeetingTokenTest do
     end
 
     test "gives an error if invalid parameters are given" do
-      expect(HTTPoisonMock, :post, fn url, body, headers ->
-        assert url == "https://api.daily.co/v1/meeting-tokens"
-        assert_correct_headers(headers)
-        assert body == "{\"properties\":{\"invalid\":\"parameter\"}}"
-        json_response = "{\"error\":\"invalid-request-error\",\"info\":\"unknown parameter 'invalid'\"}"
-        {:ok, %HTTPoison.Response{status_code: 400, body: json_response}}
-      end)
-
-      params = %{invalid: "parameter"}
-
-      response = MeetingToken.create(params)
-      assert response == {:error, :invalid_data, %{"error" => "invalid-request-error", "info" => "unknown parameter 'invalid'"}}
+      response = MeetingToken.create(invalid: "parameter")
+      assert response == {:error, :invalid_params, [:invalid]}
     end
 
     test "unauthorized" do

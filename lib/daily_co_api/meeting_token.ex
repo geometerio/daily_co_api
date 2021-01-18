@@ -1,17 +1,25 @@
 defmodule DailyCoAPI.MeetingToken do
-  alias DailyCoAPI.HTTP
+  alias DailyCoAPI.{HTTP, Params}
+
+  @valid_create_params [:room_name]
 
   def create(params) when is_list(params), do: params |> Map.new() |> create()
 
   def create(params) when is_map(params) do
-    json_params = %{properties: params} |> Jason.encode!()
-    {:ok, http_response} = HTTP.client().post(create_meeting_token_url(), json_params, HTTP.headers())
+    case params |> Params.check_for_valid_params(@valid_create_params) do
+      {:ok, valid_params} ->
+        json_params = %{properties: valid_params} |> Jason.encode!()
+        {:ok, http_response} = HTTP.client().post(create_meeting_token_url(), json_params, HTTP.headers())
 
-    case http_response do
-      %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> Map.get("token")}
-      %{status_code: 400, body: json_response} -> {:error, :invalid_data, json_response |> Jason.decode!()}
-      %{status_code: 401} -> {:error, :unauthorized}
-      %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+        case http_response do
+          %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> Map.get("token")}
+          %{status_code: 400, body: json_response} -> {:error, :invalid_data, json_response |> Jason.decode!()}
+          %{status_code: 401} -> {:error, :unauthorized}
+          %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+        end
+
+      error ->
+        error
     end
   end
 
