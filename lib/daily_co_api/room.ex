@@ -123,10 +123,9 @@ defmodule DailyCoAPI.Room do
     response = json_response |> Jason.decode!()
     info = response["info"]
 
-    if(Regex.match?(~r/^a room named .* already exists$/, info)) do
-      {:error, :room_already_exists, info}
-    else
-      {:error, :invalid_data, response}
+    case Regex.named_captures(~r/^a room named (?<room_name>.*) already exists$/, info) do
+      %{"room_name" => room_name} -> {:error, :room_already_exists, %{room_name: room_name}}
+      nil -> {:error, :invalid_data, response}
     end
   end
 end

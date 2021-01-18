@@ -211,7 +211,7 @@ defmodule DailyCoAPI.RoomTest do
 
       response = Room.create(name: "foo")
 
-      assert response == {:error, :room_already_exists, "a room named foo already exists"}
+      assert response == {:error, :room_already_exists, %{room_name: "foo"}}
     end
 
     test "unauthorized" do
