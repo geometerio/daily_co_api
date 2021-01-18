@@ -168,6 +168,12 @@ defmodule DailyCoAPI.RoomTest do
       assert response == {:error, :invalid_params, [:invalid]}
     end
 
+    @tag :skip
+    test "gives an error if an invalid room name is given" do
+      response = Room.create(name: "invalid#room#name")
+      assert response == {:error, :invalid_room_name, ""}
+    end
+
     test "gives an error if invalid data is provided" do
       expect(HTTPoisonMock, :post, fn url, body, headers ->
         assert url == "https://api.daily.co/v1/rooms"

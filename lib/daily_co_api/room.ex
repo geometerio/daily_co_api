@@ -109,4 +109,13 @@ defmodule DailyCoAPI.Room do
       {:error, :invalid_data, response}
     end
   end
+
+  # A room name can include only the uppercase and lowercase ascii letters, numbers, dash and underscore. In other words,
+  # this regexp detects an invalid room name: /[^A-Za-z0-9_\-]/.
+  # Together, the domain name and the room name cannot exceed 41 characters. You'll get an error if you try to create
+  # a room with a name that's too long.
+  #  %{
+  #    "error" => "invalid-request-error",
+  #    "info" => "invalid#name contains invalid characters (room namescan contain A-Z, a-z, 0-9, '-', and '_')"
+  #  }}
 end
