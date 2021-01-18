@@ -162,18 +162,10 @@ defmodule DailyCoAPI.RoomTest do
     end
 
     test "gives an error if invalid parameters are given" do
-      expect(HTTPoisonMock, :post, fn url, body, headers ->
-        assert url == "https://api.daily.co/v1/rooms"
-        assert_correct_headers(headers)
-        assert body == "{\"invalid\":\"parameter\"}"
-        json_response = "{\"error\":\"invalid-request-error\",\"info\":\"unknown parameter 'invalid'\"}"
-        {:ok, %HTTPoison.Response{status_code: 400, body: json_response}}
-      end)
-
       params = %{invalid: "parameter"}
 
       response = Room.create(params)
-      assert response == {:error, :invalid_data, %{"error" => "invalid-request-error", "info" => "unknown parameter 'invalid'"}}
+      assert response == {:error, :invalid_params, [:invalid]}
     end
 
     test "unauthorized" do
@@ -195,6 +187,34 @@ defmodule DailyCoAPI.RoomTest do
 
       response = Room.create()
       assert response == {:error, :server_error, "server-error"}
+    end
+
+    test "success - changes params into the proper format required by daily.co" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        assert body == ~s|{"name":"my-new-room","properties":{"exp":1000}}|
+        json_response = File.read!("test/daily_co_api/room_response.json")
+        {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
+      end)
+
+      params = %{name: "my-new-room", exp: 1000}
+
+      {:ok, room_data} = Room.create(params)
+      assert room_data == expected_room_data()
+    end
+
+    test "success - accepts a keyword list of params" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        assert body == ~s|{"name":"my-new-room","properties":{"exp":1000}}|
+        json_response = File.read!("test/daily_co_api/room_response.json")
+        {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
+      end)
+
+      {:ok, room_data} = Room.create(name: "my-new-room", exp: 1000)
+      assert room_data == expected_room_data()
     end
 
     defp expected_room_data_on_create() do
