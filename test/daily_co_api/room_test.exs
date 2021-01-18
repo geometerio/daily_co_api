@@ -190,6 +190,22 @@ defmodule DailyCoAPI.RoomTest do
                 }}
     end
 
+    test "gives an error if the room already exists" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        assert body == ~s|{"name":"foo"}|
+
+        json_response = ~s|{"error":"invalid-request-error","info":"a room named foo already exists"}|
+
+        {:ok, %HTTPoison.Response{status_code: 400, body: json_response}}
+      end)
+
+      response = Room.create(name: "foo")
+
+      assert response == {:error, :room_already_exists, "a room named foo already exists"}
+    end
+
     test "unauthorized" do
       expect(HTTPoisonMock, :post, fn url, _body, headers ->
         assert url == "https://api.daily.co/v1/rooms"

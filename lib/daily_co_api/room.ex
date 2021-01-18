@@ -38,7 +38,7 @@ defmodule DailyCoAPI.Room do
 
         case http_response do
           %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
-          %{status_code: 400, body: json_response} -> {:error, :invalid_data, json_response |> Jason.decode!()}
+          %{status_code: 400, body: json_response} -> json_response |> process_400_error()
           %{status_code: 401} -> {:error, :unauthorized}
           %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
         end
@@ -96,6 +96,17 @@ defmodule DailyCoAPI.Room do
     case config_json["start_video_off"] do
       nil -> %{}
       start_video_off -> %{start_video_off: start_video_off}
+    end
+  end
+
+  defp process_400_error(json_response) do
+    response = json_response |> Jason.decode!()
+    info = response["info"]
+
+    if(Regex.match?(~r/^a room named .* already exists$/, info)) do
+      {:error, :room_already_exists, info}
+    else
+      {:error, :invalid_data, response}
     end
   end
 end
