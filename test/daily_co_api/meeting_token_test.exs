@@ -24,6 +24,19 @@ defmodule DailyCoAPI.MeetingTokenTest do
       assert meeting_token == "abcdefg1234"
     end
 
+    test "success - works with a keyword list for arguments" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/meeting-tokens"
+        assert_correct_headers(headers)
+        assert body == ~S|{"properties":{"room_name":"my-new-room"}}|
+        json_response = ~S|{"token": "abcdefg1234"}|
+        {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
+      end)
+
+      {:ok, meeting_token} = MeetingToken.create(room_name: "my-new-room")
+      assert meeting_token == "abcdefg1234"
+    end
+
     test "gives an error if invalid parameters are given" do
       expect(HTTPoisonMock, :post, fn url, body, headers ->
         assert url == "https://api.daily.co/v1/meeting-tokens"

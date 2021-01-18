@@ -1,7 +1,9 @@
 defmodule DailyCoAPI.MeetingToken do
   alias DailyCoAPI.HTTP
 
-  def create(params) do
+  def create(params) when is_list(params), do: params |> Map.new() |> create()
+
+  def create(params) when is_map(params) do
     json_params = %{properties: params} |> Jason.encode!()
     {:ok, http_response} = HTTP.client().post(create_meeting_token_url(), json_params, HTTP.headers())
 

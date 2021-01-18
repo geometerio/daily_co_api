@@ -32,7 +32,7 @@ defmodule DailyCoAPI.Room do
     case params |> Params.check_for_valid_params(@valid_create_params) do
       {:ok, valid_params} ->
         json_params =
-          valid_params |> convert_to_proper_format() |> Params.filter_out_nil_keys() |> default_to_empty_map() |> Jason.encode!()
+          valid_params |> convert_to_proper_format() |> Params.filter_out_nil_keys() |> Params.default_to_empty_map() |> Jason.encode!()
 
         {:ok, http_response} = HTTP.client().post(create_room_url(), json_params, HTTP.headers())
 
@@ -98,7 +98,4 @@ defmodule DailyCoAPI.Room do
       start_video_off -> %{start_video_off: start_video_off}
     end
   end
-
-  defp default_to_empty_map(nil), do: %{}
-  defp default_to_empty_map(anything_but_nil), do: anything_but_nil
 end

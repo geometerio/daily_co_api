@@ -21,4 +21,7 @@ defmodule DailyCoAPI.Params do
       {:ok, params}
     end
   end
+
+  def default_to_empty_map(nil), do: %{}
+  def default_to_empty_map(anything_but_nil), do: anything_but_nil
 end

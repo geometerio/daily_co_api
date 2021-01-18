@@ -50,4 +50,14 @@ defmodule DailyCoAPI.ParamsTest do
       assert Params.check_for_valid_params(params, valid_params) == {:error, :invalid_params, [:c]}
     end
   end
+
+  describe "default_to_empty_map/1" do
+    test "returns an empty map if nil" do
+      assert Params.default_to_empty_map(nil) == %{}
+    end
+
+    test "returns the argument if non-nil" do
+      assert Params.default_to_empty_map(%{foo: :bar}) == %{foo: :bar}
+    end
+  end
 end
