@@ -29,7 +29,7 @@ defmodule DailyCoAPI.Room do
   def create(params) when is_list(params), do: params |> Map.new() |> create()
 
   def create(params) when is_map(params) do
-    case params |> Params.check_for_valid_params(@valid_create_params) do
+    case check_for_valid_params(params) do
       {:ok, valid_params} ->
         json_params =
           valid_params |> convert_to_proper_format() |> Params.filter_out_nil_keys() |> Params.default_to_empty_map() |> Jason.encode!()
@@ -63,6 +63,26 @@ defmodule DailyCoAPI.Room do
   defp create_room_url(), do: HTTP.daily_co_api_endpoint() <> "rooms"
   defp room_url(room_name), do: HTTP.daily_co_api_endpoint() <> "rooms/#{room_name}"
   defp delete_room_url(room_name), do: HTTP.daily_co_api_endpoint() <> "rooms/" <> room_name
+
+  defp check_for_valid_params(params) do
+    with {:ok, params} <- Params.check_for_valid_params(params, @valid_create_params),
+         {:ok, params} <- check_for_valid_room_name(params) do
+      {:ok, params}
+    else
+      error ->
+        error
+    end
+  end
+
+  def check_for_valid_room_name(params) do
+    room_name = params[:name]
+
+    if room_name && Regex.match?(~r/[^A-Za-z0-9_\-]/, room_name) do
+      {:error, :invalid_room_name, "#{room_name} contains invalid characters (room names can contain A-Z, a-z, 0-9, '-', and '_')"}
+    else
+      {:ok, params}
+    end
+  end
 
   defp extract_fields(json) do
     room_data = for room_json <- json["data"], into: [], do: extract_room_data(room_json)
@@ -109,13 +129,4 @@ defmodule DailyCoAPI.Room do
       {:error, :invalid_data, response}
     end
   end
-
-  # A room name can include only the uppercase and lowercase ascii letters, numbers, dash and underscore. In other words,
-  # this regexp detects an invalid room name: /[^A-Za-z0-9_\-]/.
-  # Together, the domain name and the room name cannot exceed 41 characters. You'll get an error if you try to create
-  # a room with a name that's too long.
-  #  %{
-  #    "error" => "invalid-request-error",
-  #    "info" => "invalid#name contains invalid characters (room namescan contain A-Z, a-z, 0-9, '-', and '_')"
-  #  }}
 end

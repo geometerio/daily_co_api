@@ -168,10 +168,12 @@ defmodule DailyCoAPI.RoomTest do
       assert response == {:error, :invalid_params, [:invalid]}
     end
 
-    @tag :skip
     test "gives an error if an invalid room name is given" do
       response = Room.create(name: "invalid#room#name")
-      assert response == {:error, :invalid_room_name, ""}
+
+      assert response ==
+               {:error, :invalid_room_name,
+                "invalid#room#name contains invalid characters (room names can contain A-Z, a-z, 0-9, '-', and '_')"}
     end
 
     test "gives an error if invalid data is provided" do
@@ -314,6 +316,17 @@ defmodule DailyCoAPI.RoomTest do
 
       response = Room.delete("my-room")
       assert response == {:error, :server_error, "server-error"}
+    end
+  end
+
+  describe "check_for_valid_room_name/1" do
+    test "returns ok if the room name has only the allowed characters" do
+      assert Room.check_for_valid_room_name(%{name: "valid-room-name"}) == {:ok, %{name: "valid-room-name"}}
+    end
+
+    test "returns an error if the room name has characters that are not allowed" do
+      assert Room.check_for_valid_room_name(%{name: "invalid#name"}) ==
+               {:error, :invalid_room_name, "invalid#name contains invalid characters (room names can contain A-Z, a-z, 0-9, '-', and '_')"}
     end
   end
 end
