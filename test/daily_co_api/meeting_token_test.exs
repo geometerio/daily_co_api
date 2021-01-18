@@ -42,6 +42,28 @@ defmodule DailyCoAPI.MeetingTokenTest do
       assert response == {:error, :invalid_params, [:invalid]}
     end
 
+    test "gives an error if invalid data is provided" do
+      expect(HTTPoisonMock, :post, fn url, body, headers ->
+        assert url == "https://api.daily.co/v1/meeting-tokens"
+        assert_correct_headers(headers)
+        assert body == ~s|{"properties":{"exp":"not an integer"}}|
+
+        json_response =
+          ~s|{"error":"invalid-request-error","info":"exp was 'not an int' but should be a number of seconds since the unix epoch"}|
+
+        {:ok, %HTTPoison.Response{status_code: 400, body: json_response}}
+      end)
+
+      response = MeetingToken.create(exp: "not an integer")
+
+      assert response ==
+               {:error, :invalid_data,
+                %{
+                  "error" => "invalid-request-error",
+                  "info" => "exp was 'not an int' but should be a number of seconds since the unix epoch"
+                }}
+    end
+
     test "unauthorized" do
       expect(HTTPoisonMock, :post, fn url, _body, headers ->
         assert url == "https://api.daily.co/v1/meeting-tokens"

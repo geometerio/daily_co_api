@@ -1,7 +1,7 @@
 defmodule DailyCoAPI.MeetingToken do
   alias DailyCoAPI.{HTTP, Params}
 
-  @valid_create_params [:room_name]
+  @valid_create_params [:exp, :room_name]
 
   def create(params) when is_list(params), do: params |> Map.new() |> create()
 
