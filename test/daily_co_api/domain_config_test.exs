@@ -47,7 +47,7 @@ defmodule DailyCoAPI.DomainConfigTest do
   defp expected_config() do
     %{
       domain_name: "your-domain",
-      config: %{
+      config: %DomainConfig{
         hide_daily_branding: true,
         redirect_on_meeting_exit: "",
         meeting_join_hook: "",

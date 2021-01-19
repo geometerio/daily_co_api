@@ -1,6 +1,52 @@
 defmodule DailyCoAPI.DomainConfig do
-  alias DailyCoAPI.HTTP
+  alias DailyCoAPI.{
+    DomainConfig,
+    HTTP
+  }
 
+  @enforce_keys [
+    :enable_daily_logger,
+    :hide_daily_branding,
+    :hipaa,
+    :intercom_auto_record,
+    :intercom_manual_record,
+    :max_live_streams,
+    :meeting_join_hook,
+    :redirect_on_meeting_exit,
+    :sfu_impl,
+    :signaling_impl
+  ]
+  @optional_keys [
+    :callstats,
+    :lang,
+    :max_api_rooms,
+    :sfu_switchover,
+    :switchover_impl,
+    :webhook_meeting_end
+  ]
+
+  defstruct @enforce_keys ++ @optional_keys
+
+  @type t :: %__MODULE__{
+          callstats: nil | String.t(),
+          enable_daily_logger: boolean(),
+          hide_daily_branding: boolean(),
+          hipaa: boolean(),
+          intercom_auto_record: boolean(),
+          intercom_manual_record: String.t(),
+          lang: nil | String.t(),
+          max_api_rooms: nil | integer(),
+          max_live_streams: nil | integer(),
+          meeting_join_hook: String.t(),
+          redirect_on_meeting_exit: String.t(),
+          sfu_impl: String.t(),
+          sfu_switchover: nil | integer(),
+          signaling_impl: String.t(),
+          switchover_impl: nil | String.t(),
+          webhook_meeting_end: nil | String.t()
+        }
+
+  @spec get :: {:ok, %{config: DomainConfig.t(), domain_name: String.t()}} | {:error, :unauthorized} | {:error, :server_error, map()}
   def get() do
     {:ok, http_response} = HTTP.client().get(domain_config_url(), HTTP.headers())
 
@@ -21,7 +67,7 @@ defmodule DailyCoAPI.DomainConfig do
   end
 
   defp extract_config_fields(config_json) do
-    %{
+    %__MODULE__{
       callstats: config_json["callstats"],
       enable_daily_logger: config_json["enable_daily_logger"],
       hide_daily_branding: config_json["hide_daily_branding"],
