@@ -38,7 +38,7 @@ defmodule DailyCoAPI.Room do
 
         case http_response do
           %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
-          %{status_code: 400, body: json_response} -> json_response |> process_400_error()
+          %{status_code: 400, body: json_response} -> json_response |> parse_400_error()
           %{status_code: 401} -> {:error, :unauthorized}
           %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
         end
@@ -132,7 +132,7 @@ defmodule DailyCoAPI.Room do
     end
   end
 
-  defp process_400_error(json_response) do
+  defp parse_400_error(json_response) do
     response = json_response |> Jason.decode!()
     info = response["info"]
 
