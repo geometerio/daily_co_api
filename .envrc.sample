@@ -1,1 +1,2 @@
 export DAILY_CO_API_KEY="get from https://dashboard.daily.co/developers"
+export DAILY_CO_DOMAIN=sample-domain

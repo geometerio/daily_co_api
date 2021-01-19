@@ -168,6 +168,15 @@ defmodule DailyCoAPI.RoomTest do
       assert response == {:error, :invalid_params, [:invalid]}
     end
 
+    test "gives an error if the room name plus domain name is longer than 41 characters" do
+      # The test domain name is 11 characters long
+      room_name = "123456789012345678901234567890"
+      room_name_too_long = room_name <> "1"
+
+      response = Room.create(name: room_name_too_long)
+      assert response == {:error, :room_name_too_long, "domain name plus room name exceeds 41 character limit"}
+    end
+
     test "gives an error if an invalid room name is given" do
       response = Room.create(name: "invalid#room#name")
 
@@ -327,6 +336,17 @@ defmodule DailyCoAPI.RoomTest do
     test "returns an error if the room name has characters that are not allowed" do
       assert Room.check_for_valid_room_name(%{name: "invalid#name"}) ==
                {:error, :invalid_room_name, "invalid#name contains invalid characters (room names can contain A-Z, a-z, 0-9, '-', and '_')"}
+    end
+
+    test "returns an error if the room name plus the domain name is longer than 41 characters" do
+      # The test domain name is 11 characters long
+      room_name = "123456789012345678901234567890"
+      assert Room.check_for_valid_room_name(%{name: room_name}) == {:ok, %{name: room_name}}
+
+      room_name_too_long = room_name <> "1"
+
+      assert Room.check_for_valid_room_name(%{name: room_name_too_long}) ==
+               {:error, :room_name_too_long, "domain name plus room name exceeds 41 character limit"}
     end
   end
 end

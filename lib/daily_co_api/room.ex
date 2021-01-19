@@ -74,13 +74,21 @@ defmodule DailyCoAPI.Room do
     end
   end
 
+  @allowed_length_of_domain_plus_room_name 41
+
   def check_for_valid_room_name(params) do
     room_name = params[:name]
+    domain = Application.get_env(:daily_co_api, :domain)
 
-    if room_name && Regex.match?(~r/[^A-Za-z0-9_\-]/, room_name) do
-      {:error, :invalid_room_name, "#{room_name} contains invalid characters (room names can contain A-Z, a-z, 0-9, '-', and '_')"}
-    else
-      {:ok, params}
+    cond do
+      room_name && Regex.match?(~r/[^A-Za-z0-9_\-]/, room_name) ->
+        {:error, :invalid_room_name, "#{room_name} contains invalid characters (room names can contain A-Z, a-z, 0-9, '-', and '_')"}
+
+      room_name && String.length(room_name <> domain) > @allowed_length_of_domain_plus_room_name ->
+        {:error, :room_name_too_long, "domain name plus room name exceeds #{@allowed_length_of_domain_plus_room_name} character limit"}
+
+      true ->
+        {:ok, params}
     end
   end
 
