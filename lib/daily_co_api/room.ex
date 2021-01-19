@@ -44,6 +44,12 @@ defmodule DailyCoAPI.Room do
 
   @valid_create_params [:name, :exp]
 
+  @spec create(keyword() | map()) ::
+          {:ok, DailyCoAPI.Room.t()}
+          | {:error, :unauthorized}
+          | {:error, :invalid_data | :invalid_params | :invalid_room_name | :room_already_exists | :room_name_too_long | :server_error,
+             String.t() | map()}
+
   def create(params \\ %{})
 
   def create(params) when is_list(params), do: params |> Map.new() |> create()
@@ -51,8 +57,7 @@ defmodule DailyCoAPI.Room do
   def create(params) when is_map(params) do
     case check_for_valid_params(params) do
       {:ok, valid_params} ->
-        json_params =
-          valid_params |> convert_to_proper_format() |> Params.filter_out_nil_keys() |> Params.default_to_empty_map() |> Jason.encode!()
+        json_params = valid_params |> convert_to_proper_format() |> Params.filter_out_nil_keys() |> Params.default_to_empty_map() |> Jason.encode!()
 
         {:ok, http_response} = HTTP.client().post(create_room_url(), json_params, HTTP.headers())
 
@@ -68,6 +73,7 @@ defmodule DailyCoAPI.Room do
     end
   end
 
+  @spec delete(String.t()) :: :ok | {:error, :not_found | :unauthorized} | {:error, :server_error, map()}
   def delete(room_name) do
     {:ok, http_response} = HTTP.client().delete(delete_room_url(room_name), HTTP.headers())
 
@@ -96,11 +102,13 @@ defmodule DailyCoAPI.Room do
 
   @allowed_length_of_domain_plus_room_name 41
 
+  @spec max_allowed_room_name_length :: integer
   def max_allowed_room_name_length() do
     domain = Application.get_env(:daily_co_api, :domain)
     @allowed_length_of_domain_plus_room_name - String.length(domain)
   end
 
+  @spec check_for_valid_room_name(map()) :: {:ok, map()} | {:error, :invalid_room_name | :room_name_too_long, String.t()}
   def check_for_valid_room_name(params) do
     room_name = params[:name]
     domain = Application.get_env(:daily_co_api, :domain)
