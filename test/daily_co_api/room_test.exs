@@ -47,7 +47,7 @@ defmodule DailyCoAPI.RoomTest do
       %{
         total_count: 2,
         rooms: [
-          %{
+          %Room{
             id: "5e3cf703-5547-47d6-a371-37b1f0b4427f",
             name: "w2pp2cf4kltgFACPKXmX",
             api_created: false,
@@ -56,7 +56,7 @@ defmodule DailyCoAPI.RoomTest do
             created_at: ~N[2019-01-26T09:01:22.000Z],
             config: %{start_video_off: true}
           },
-          %{
+          %Room{
             id: "d61cd7b2-a273-42b4-89bd-be763fd562c1",
             name: "hello",
             api_created: false,
@@ -120,7 +120,7 @@ defmodule DailyCoAPI.RoomTest do
     end
 
     defp expected_room_data() do
-      %{
+      %Room{
         api_created: false,
         config: %{start_video_off: true},
         created_at: ~N[2019-01-26 09:01:22.000],
@@ -273,7 +273,7 @@ defmodule DailyCoAPI.RoomTest do
     end
 
     defp expected_room_data_on_create() do
-      %{
+      %Room{
         api_created: true,
         config: %{start_video_off: true},
         created_at: ~N[2019-01-26 09:01:22.000],

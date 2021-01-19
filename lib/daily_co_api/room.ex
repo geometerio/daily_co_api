@@ -1,5 +1,24 @@
 defmodule DailyCoAPI.Room do
-  alias DailyCoAPI.{HTTP, Params}
+  alias DailyCoAPI.{
+    HTTP,
+    Params,
+    Room
+  }
+
+  @enforce_keys [:id, :name, :url]
+  @optional_keys [:api_created, :privacy, :created_at, :config]
+
+  defstruct @enforce_keys ++ @optional_keys
+
+  @type t :: %__MODULE__{
+          id: String.t(),
+          name: String.t(),
+          url: String.t(),
+          api_created: boolean(),
+          privacy: String.t(),
+          created_at: NaiveDateTime.t(),
+          config: map()
+        }
 
   def list() do
     {:ok, http_response} = HTTP.client().get(list_all_url(), HTTP.headers())
@@ -11,6 +30,7 @@ defmodule DailyCoAPI.Room do
     end
   end
 
+  @spec get(String.t()) :: {:ok, Room.t()} | {:error, :not_found | :unauthorized} | {:error, :server_error, map()}
   def get(room_name) do
     {:ok, http_response} = HTTP.client().get(room_url(room_name), HTTP.headers())
 
@@ -114,7 +134,7 @@ defmodule DailyCoAPI.Room do
   end
 
   defp extract_room_data(room_json) do
-    %{
+    %__MODULE__{
       id: room_json["id"],
       name: room_json["name"],
       api_created: room_json["api_created"],
