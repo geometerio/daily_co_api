@@ -133,7 +133,7 @@ defmodule DailyCoAPI.MeetingTokenTest do
     end
 
     defp expected_valid_meeting_token() do
-      %{
+      %MeetingToken{
         room_name: "EevVrrxee4JBxKzmKkjC",
         is_owner: true,
         user_name: "host",
