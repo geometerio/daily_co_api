@@ -349,4 +349,11 @@ defmodule DailyCoAPI.RoomTest do
                {:error, :room_name_too_long, "domain name plus room name exceeds 41 character limit"}
     end
   end
+
+  describe "max_allowed_room_name_length/0" do
+    test "returns the maximum allowed room name length" do
+      # Note that the test domain is 11 characters long.
+      assert Room.max_allowed_room_name_length() == 30
+    end
+  end
 end

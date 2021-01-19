@@ -76,6 +76,11 @@ defmodule DailyCoAPI.Room do
 
   @allowed_length_of_domain_plus_room_name 41
 
+  def max_allowed_room_name_length() do
+    domain = Application.get_env(:daily_co_api, :domain)
+    @allowed_length_of_domain_plus_room_name - String.length(domain)
+  end
+
   def check_for_valid_room_name(params) do
     room_name = params[:name]
     domain = Application.get_env(:daily_co_api, :domain)
