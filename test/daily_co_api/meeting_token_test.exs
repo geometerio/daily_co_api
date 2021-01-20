@@ -48,8 +48,7 @@ defmodule DailyCoAPI.MeetingTokenTest do
         assert_correct_headers(headers)
         assert body == ~s|{"properties":{"exp":"not an integer"}}|
 
-        json_response =
-          ~s|{"error":"invalid-request-error","info":"exp was 'not an int' but should be a number of seconds since the unix epoch"}|
+        json_response = ~s|{"error":"invalid-request-error","info":"exp was 'not an int' but should be a number of seconds since the unix epoch"}|
 
         {:ok, %HTTPoison.Response{status_code: 400, body: json_response}}
       end)
@@ -84,6 +83,17 @@ defmodule DailyCoAPI.MeetingTokenTest do
 
       {:error, :server_error, error_message} = MeetingToken.create(%{room_name: "my-room-name"})
       assert error_message == "server-error"
+    end
+
+    test "http error" do
+      expect(HTTPoisonMock, :post, fn url, _body, headers ->
+        assert url == "https://api.daily.co/v1/meeting-tokens"
+        assert_correct_headers(headers)
+        {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}
+      end)
+
+      response = MeetingToken.create(%{room_name: "my-room-name"})
+      assert response == {:error, :http_error, :nxdomain}
     end
   end
 
@@ -120,6 +130,17 @@ defmodule DailyCoAPI.MeetingTokenTest do
 
       response = MeetingToken.validate("invalid-meeting-token")
       assert response == {:error, :server_error, "server-error"}
+    end
+
+    test "gives an http error if something goes wrong at the http level" do
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/meeting-tokens/invalid-meeting-token"
+        assert_correct_headers(headers)
+        {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}
+      end)
+
+      response = MeetingToken.validate("invalid-meeting-token")
+      assert response == {:error, :http_error, :nxdomain}
     end
 
     test "unauthorized" do

@@ -31,17 +31,17 @@ defmodule DailyCoAPI.MeetingToken do
   def create(params) when is_list(params), do: params |> Map.new() |> create()
 
   def create(params) when is_map(params) do
-    case params |> Params.check_for_valid_params(@valid_create_params) do
-      {:ok, valid_params} ->
-        json_params = %{properties: valid_params} |> Jason.encode!()
-        {:ok, http_response} = HTTP.client().post(create_meeting_token_url(), json_params, HTTP.headers())
-
-        case http_response do
-          %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> Map.get("token")}
-          %{status_code: 400, body: json_response} -> {:error, :invalid_data, json_response |> Jason.decode!()}
-          %{status_code: 401} -> {:error, :unauthorized}
-          %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
-        end
+    with {:ok, valid_params} <- params |> Params.check_for_valid_params(@valid_create_params),
+         {:ok, http_response} <- HTTP.client().post(create_meeting_token_url(), %{properties: valid_params} |> Jason.encode!(), HTTP.headers()) do
+      case http_response do
+        %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> Map.get("token")}
+        %{status_code: 400, body: json_response} -> {:error, :invalid_data, json_response |> Jason.decode!()}
+        %{status_code: 401} -> {:error, :unauthorized}
+        %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+      end
+    else
+      {:error, %HTTPoison.Error{reason: error_message}} ->
+        {:error, :http_error, error_message}
 
       error ->
         error
@@ -52,14 +52,19 @@ defmodule DailyCoAPI.MeetingToken do
           {:ok, MeetingToken.t()}
           | {:error, :invalid_meeting_token | :unauthorized}
           | {:error, :server_error, map()}
+          | {:error, :http_error, String.t()}
   def validate(meeting_token) do
-    {:ok, http_response} = HTTP.client().get(validate_meeting_token_url(meeting_token), HTTP.headers())
+    case HTTP.client().get(validate_meeting_token_url(meeting_token), HTTP.headers()) do
+      {:ok, http_response} ->
+        case http_response do
+          %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> validated_meeting_token()}
+          %{status_code: 400} -> {:error, :invalid_meeting_token}
+          %{status_code: 401} -> {:error, :unauthorized}
+          %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+        end
 
-    case http_response do
-      %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> validated_meeting_token()}
-      %{status_code: 400} -> {:error, :invalid_meeting_token}
-      %{status_code: 401} -> {:error, :unauthorized}
-      %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+      {:error, %HTTPoison.Error{reason: error_message}} ->
+        {:error, :http_error, error_message}
     end
   end
 

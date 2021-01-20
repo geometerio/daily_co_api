@@ -20,7 +20,11 @@ defmodule DailyCoAPI.Room do
           config: map()
         }
 
-  @spec list :: {:ok, %{rooms: [Room.t()], total_count: integer()}} | {:error, :unauthorized} | {:error, :server_error, String.t() | map()}
+  @spec list ::
+          {:ok, %{rooms: [Room.t()], total_count: integer()}}
+          | {:error, :unauthorized}
+          | {:error, :server_error, String.t() | map()}
+          | {:error, :http_error, String.t()}
   def list() do
     case HTTP.client().get(list_all_url(), HTTP.headers()) do
       {:ok, http_response} ->
@@ -35,7 +39,8 @@ defmodule DailyCoAPI.Room do
     end
   end
 
-  @spec get(String.t()) :: {:ok, Room.t()} | {:error, :not_found | :unauthorized} | {:error, :server_error, map() | String.t()}
+  @spec get(String.t()) ::
+          {:ok, Room.t()} | {:error, :not_found | :unauthorized} | {:error, :server_error, map() | String.t()} | {:error, :http_error, String.t()}
   def get(room_name) do
     case HTTP.client().get(room_url(room_name), HTTP.headers()) do
       {:ok, http_response} ->
@@ -58,6 +63,7 @@ defmodule DailyCoAPI.Room do
           | {:error, :unauthorized}
           | {:error, :invalid_data | :invalid_params | :invalid_room_name | :room_already_exists | :room_name_too_long | :server_error,
              String.t() | map()}
+          | {:error, :http_error, String.t()}
 
   def create(params \\ %{})
 
@@ -86,7 +92,7 @@ defmodule DailyCoAPI.Room do
     end
   end
 
-  @spec delete(String.t()) :: :ok | {:error, :not_found | :unauthorized} | {:error, :server_error, map()}
+  @spec delete(String.t()) :: :ok | {:error, :not_found | :unauthorized} | {:error, :server_error, map()} | {:error, :http_error, String.t()}
   def delete(room_name) do
     case HTTP.client().delete(delete_room_url(room_name), HTTP.headers()) do
       {:ok, http_response} ->
