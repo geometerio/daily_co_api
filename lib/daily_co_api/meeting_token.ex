@@ -12,7 +12,7 @@ defmodule DailyCoAPI.MeetingToken do
 
   defstruct @enforce_keys
 
-  @valid_create_params [:exp, :room_name]
+  @valid_create_params [:exp, :is_owner, :room_name]
 
   @type t :: %__MODULE__{
           lang: String.t() | nil,

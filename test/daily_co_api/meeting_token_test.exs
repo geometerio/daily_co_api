@@ -28,12 +28,12 @@ defmodule DailyCoAPI.MeetingTokenTest do
       expect(HTTPoisonMock, :post, fn url, body, headers ->
         assert url == "https://api.daily.co/v1/meeting-tokens"
         assert_correct_headers(headers)
-        assert body == ~S|{"properties":{"room_name":"my-new-room"}}|
+        assert body == ~S|{"properties":{"exp":12345,"is_owner":true,"room_name":"my-new-room"}}|
         json_response = ~S|{"token": "abcdefg1234"}|
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
-      {:ok, meeting_token} = MeetingToken.create(room_name: "my-new-room")
+      {:ok, meeting_token} = MeetingToken.create(room_name: "my-new-room", exp: 12345, is_owner: true)
       assert meeting_token == "abcdefg1234"
     end
 
