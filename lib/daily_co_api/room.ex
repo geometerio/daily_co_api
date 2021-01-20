@@ -20,6 +20,7 @@ defmodule DailyCoAPI.Room do
           config: map()
         }
 
+  @spec list :: {:ok, %{rooms: [Room.t()], total_count: integer()}} | {:error, :unauthorized} | {:error, :server_error, String.t() | map()}
   def list() do
     {:ok, http_response} = HTTP.client().get(list_all_url(), HTTP.headers())
 
@@ -30,7 +31,7 @@ defmodule DailyCoAPI.Room do
     end
   end
 
-  @spec get(String.t()) :: {:ok, Room.t()} | {:error, :not_found | :unauthorized} | {:error, :server_error, map()}
+  @spec get(String.t()) :: {:ok, Room.t()} | {:error, :not_found | :unauthorized} | {:error, :server_error, map() | String.t()}
   def get(room_name) do
     {:ok, http_response} = HTTP.client().get(room_url(room_name), HTTP.headers())
 
@@ -102,7 +103,7 @@ defmodule DailyCoAPI.Room do
 
   @allowed_length_of_domain_plus_room_name 41
 
-  @spec max_allowed_room_name_length :: integer
+  @spec max_allowed_room_name_length :: integer()
   def max_allowed_room_name_length() do
     domain = Application.get_env(:daily_co_api, :domain)
     @allowed_length_of_domain_plus_room_name - String.length(domain)
