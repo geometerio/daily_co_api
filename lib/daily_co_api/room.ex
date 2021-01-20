@@ -143,6 +143,8 @@ defmodule DailyCoAPI.Room do
   end
 
   defp extract_room_data(room_json) do
+    Params.raise_if_extra_keys_in_json(room_json, @enforce_keys ++ @optional_keys)
+
     %__MODULE__{
       id: room_json["id"],
       name: room_json["name"],

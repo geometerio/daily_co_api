@@ -1,7 +1,8 @@
 defmodule DailyCoAPI.DomainConfig do
   alias DailyCoAPI.{
     DomainConfig,
-    HTTP
+    HTTP,
+    Params
   }
 
   @enforce_keys [
@@ -67,6 +68,8 @@ defmodule DailyCoAPI.DomainConfig do
   end
 
   defp extract_config_fields(config_json) do
+    Params.raise_if_extra_keys_in_json(config_json, @enforce_keys ++ @optional_keys)
+
     %__MODULE__{
       callstats: config_json["callstats"],
       enable_daily_logger: config_json["enable_daily_logger"],

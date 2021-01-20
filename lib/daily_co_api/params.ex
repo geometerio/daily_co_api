@@ -24,4 +24,14 @@ defmodule DailyCoAPI.Params do
 
   def default_to_empty_map(nil), do: %{}
   def default_to_empty_map(anything_but_nil), do: anything_but_nil
+
+  def raise_if_extra_keys_in_json(json_map, struct_keys) do
+    keys_from_json = json_map |> Map.keys() |> Enum.map(&String.to_atom(&1))
+    difference = MapSet.new(keys_from_json) |> MapSet.difference(MapSet.new(struct_keys))
+
+    if MapSet.size(difference) > 0 do
+      extra_keys = difference |> MapSet.to_list() |> Enum.join(", ")
+      raise("Extra key(s) in JSON: #{extra_keys}")
+    end
+  end
 end

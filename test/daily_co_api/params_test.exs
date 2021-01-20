@@ -60,4 +60,21 @@ defmodule DailyCoAPI.ParamsTest do
       assert Params.default_to_empty_map(%{foo: :bar}) == %{foo: :bar}
     end
   end
+
+  describe "raise_if_extra_keys_in_json" do
+    test "does nothing if there are no extra keys in the json" do
+      json_map = %{"foo" => :bar}
+      struct_keys = [:foo]
+      Params.raise_if_extra_keys_in_json(json_map, struct_keys)
+    end
+
+    test "raises if there are extra keys in the json" do
+      json_map = %{"foo" => :bar, "not_in_struct" => "it's not there", "also_not_in_struct" => "no"}
+      struct_keys = [:foo]
+
+      assert_raise(RuntimeError, "Extra key(s) in JSON: also_not_in_struct, not_in_struct", fn ->
+        Params.raise_if_extra_keys_in_json(json_map, struct_keys)
+      end)
+    end
+  end
 end
