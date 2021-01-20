@@ -67,6 +67,8 @@ defmodule DailyCoAPI.MeetingToken do
   defp validate_meeting_token_url(meeting_token), do: HTTP.daily_co_api_endpoint() <> "meeting-tokens/#{meeting_token}"
 
   defp validated_meeting_token(meeting_token_json) do
+    Params.raise_if_extra_keys_in_json(meeting_token_json, @enforce_keys)
+
     %__MODULE__{
       lang: meeting_token_json["lang"],
       start_audio_off: meeting_token_json["start_audio_off"],
