@@ -22,24 +22,32 @@ defmodule DailyCoAPI.Room do
 
   @spec list :: {:ok, %{rooms: [Room.t()], total_count: integer()}} | {:error, :unauthorized} | {:error, :server_error, String.t() | map()}
   def list() do
-    {:ok, http_response} = HTTP.client().get(list_all_url(), HTTP.headers())
+    case HTTP.client().get(list_all_url(), HTTP.headers()) do
+      {:ok, http_response} ->
+        case http_response do
+          %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_fields()}
+          %{status_code: 401} -> {:error, :unauthorized}
+          %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+        end
 
-    case http_response do
-      %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_fields()}
-      %{status_code: 401} -> {:error, :unauthorized}
-      %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+      {:error, %HTTPoison.Error{reason: error_message}} ->
+        {:error, :http_error, error_message}
     end
   end
 
   @spec get(String.t()) :: {:ok, Room.t()} | {:error, :not_found | :unauthorized} | {:error, :server_error, map() | String.t()}
   def get(room_name) do
-    {:ok, http_response} = HTTP.client().get(room_url(room_name), HTTP.headers())
+    case HTTP.client().get(room_url(room_name), HTTP.headers()) do
+      {:ok, http_response} ->
+        case http_response do
+          %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
+          %{status_code: 401} -> {:error, :unauthorized}
+          %{status_code: 404} -> {:error, :not_found}
+          %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+        end
 
-    case http_response do
-      %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
-      %{status_code: 401} -> {:error, :unauthorized}
-      %{status_code: 404} -> {:error, :not_found}
-      %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+      {:error, %HTTPoison.Error{reason: error_message}} ->
+        {:error, :http_error, error_message}
     end
   end
 
@@ -60,13 +68,17 @@ defmodule DailyCoAPI.Room do
       {:ok, valid_params} ->
         json_params = valid_params |> convert_to_proper_format() |> Params.filter_out_nil_keys() |> Params.default_to_empty_map() |> Jason.encode!()
 
-        {:ok, http_response} = HTTP.client().post(create_room_url(), json_params, HTTP.headers())
+        case HTTP.client().post(create_room_url(), json_params, HTTP.headers()) do
+          {:ok, http_response} ->
+            case http_response do
+              %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
+              %{status_code: 400, body: json_response} -> json_response |> parse_400_error()
+              %{status_code: 401} -> {:error, :unauthorized}
+              %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+            end
 
-        case http_response do
-          %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_room_data()}
-          %{status_code: 400, body: json_response} -> json_response |> parse_400_error()
-          %{status_code: 401} -> {:error, :unauthorized}
-          %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+          {:error, %HTTPoison.Error{reason: error_message}} ->
+            {:error, :http_error, error_message}
         end
 
       error ->
@@ -76,13 +88,17 @@ defmodule DailyCoAPI.Room do
 
   @spec delete(String.t()) :: :ok | {:error, :not_found | :unauthorized} | {:error, :server_error, map()}
   def delete(room_name) do
-    {:ok, http_response} = HTTP.client().delete(delete_room_url(room_name), HTTP.headers())
+    case HTTP.client().delete(delete_room_url(room_name), HTTP.headers()) do
+      {:ok, http_response} ->
+        case http_response do
+          %{status_code: 200} -> :ok
+          %{status_code: 401} -> {:error, :unauthorized}
+          %{status_code: 404} -> {:error, :not_found}
+          %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+        end
 
-    case http_response do
-      %{status_code: 200} -> :ok
-      %{status_code: 401} -> {:error, :unauthorized}
-      %{status_code: 404} -> {:error, :not_found}
-      %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+      {:error, %HTTPoison.Error{reason: error_message}} ->
+        {:error, :http_error, error_message}
     end
   end
 

@@ -43,6 +43,17 @@ defmodule DailyCoAPI.RoomTest do
       assert response == {:error, :server_error, "server-error"}
     end
 
+    test "gives a server error if something goes wrong at the http level" do
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}
+      end)
+
+      response = Room.list()
+      assert response == {:error, :http_error, :nxdomain}
+    end
+
     defp expected_room_list_response() do
       %{
         total_count: 2,
@@ -119,6 +130,17 @@ defmodule DailyCoAPI.RoomTest do
       assert response == {:error, :server_error, "server-error"}
     end
 
+    test "gives an http error if something goes wrong at the http level" do
+      expect(HTTPoisonMock, :get, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms/my-room"
+        assert_correct_headers(headers)
+        {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}
+      end)
+
+      response = Room.get("my-room")
+      assert response == {:error, :http_error, :nxdomain}
+    end
+
     defp expected_room_data() do
       %Room{
         api_created: false,
@@ -181,8 +203,7 @@ defmodule DailyCoAPI.RoomTest do
       response = Room.create(name: "invalid#room#name")
 
       assert response ==
-               {:error, :invalid_room_name,
-                "invalid#room#name contains invalid characters (room names can contain A-Z, a-z, 0-9, '-', and '_')"}
+               {:error, :invalid_room_name, "invalid#room#name contains invalid characters (room names can contain A-Z, a-z, 0-9, '-', and '_')"}
     end
 
     test "gives an error if invalid data is provided" do
@@ -191,8 +212,7 @@ defmodule DailyCoAPI.RoomTest do
         assert_correct_headers(headers)
         assert body == ~s|{"properties":{"exp":"not an integer"}}|
 
-        json_response =
-          ~s|{"error":"invalid-request-error","info":"exp was 'not an int' but should be a number of seconds since the unix epoch"}|
+        json_response = ~s|{"error":"invalid-request-error","info":"exp was 'not an int' but should be a number of seconds since the unix epoch"}|
 
         {:ok, %HTTPoison.Response{status_code: 400, body: json_response}}
       end)
@@ -242,6 +262,17 @@ defmodule DailyCoAPI.RoomTest do
 
       response = Room.create()
       assert response == {:error, :server_error, "server-error"}
+    end
+
+    test "gives an http error if something goes wrong at the http level" do
+      expect(HTTPoisonMock, :post, fn url, _body, headers ->
+        assert url == "https://api.daily.co/v1/rooms"
+        assert_correct_headers(headers)
+        {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}
+      end)
+
+      response = Room.create()
+      assert response == {:error, :http_error, :nxdomain}
     end
 
     test "success - changes params into the proper format required by daily.co" do
@@ -325,6 +356,17 @@ defmodule DailyCoAPI.RoomTest do
 
       response = Room.delete("my-room")
       assert response == {:error, :server_error, "server-error"}
+    end
+
+    test "gives an http error if something goes wrong at the http level" do
+      expect(HTTPoisonMock, :delete, fn url, headers ->
+        assert url == "https://api.daily.co/v1/rooms/my-room"
+        assert_correct_headers(headers)
+        {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}
+      end)
+
+      response = Room.delete("my-room")
+      assert response == {:error, :http_error, :nxdomain}
     end
   end
 
