@@ -47,14 +47,22 @@ defmodule DailyCoAPI.DomainConfig do
           webhook_meeting_end: nil | String.t()
         }
 
-  @spec get :: {:ok, %{config: DomainConfig.t(), domain_name: String.t()}} | {:error, :unauthorized} | {:error, :server_error, map()}
+  @spec get ::
+          {:ok, %{config: DomainConfig.t(), domain_name: String.t()}}
+          | {:error, :unauthorized}
+          | {:error, :server_error, map()}
+          | {:error, :http_error, String.t()}
   def get() do
-    {:ok, http_response} = HTTP.client().get(domain_config_url(), HTTP.headers())
+    case HTTP.client().get(domain_config_url(), HTTP.headers()) do
+      {:ok, http_response} ->
+        case http_response do
+          %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_fields()}
+          %{status_code: 401} -> {:error, :unauthorized}
+          %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+        end
 
-    case http_response do
-      %{status_code: 200, body: json_response} -> {:ok, json_response |> Jason.decode!() |> extract_fields()}
-      %{status_code: 401} -> {:error, :unauthorized}
-      %{status_code: 500, body: json_response} -> {:error, :server_error, json_response |> Jason.decode!() |> Map.get("error")}
+      {:error, %HTTPoison.Error{reason: error_message}} ->
+        {:error, :http_error, error_message}
     end
   end
 

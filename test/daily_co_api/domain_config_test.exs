@@ -44,6 +44,17 @@ defmodule DailyCoAPI.DomainConfigTest do
     assert response == {:error, :server_error, "server-error"}
   end
 
+  test "gives an http error if something goes wrong at the http level" do
+    expect(HTTPoisonMock, :get, fn url, headers ->
+      assert url == "https://api.daily.co/v1/"
+      assert_correct_headers(headers)
+      {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}}
+    end)
+
+    response = DomainConfig.get()
+    assert response == {:error, :http_error, :nxdomain}
+  end
+
   defp expected_config() do
     %{
       domain_name: "your-domain",
