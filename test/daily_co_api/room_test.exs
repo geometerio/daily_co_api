@@ -13,7 +13,7 @@ defmodule DailyCoAPI.RoomTest do
       expect(HTTPoisonMock, :get, fn url, headers ->
         assert url == "https://api.daily.co/v1/rooms"
         assert_correct_headers(headers)
-        json_response = File.read!("test/daily_co_api/room_list_response.json")
+        json_response = File.read!("test/fixtures/room_list_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
@@ -86,7 +86,7 @@ defmodule DailyCoAPI.RoomTest do
       expect(HTTPoisonMock, :get, fn url, headers ->
         assert url == "https://api.daily.co/v1/rooms/my-room"
         assert_correct_headers(headers)
-        json_response = File.read!("test/daily_co_api/room_response.json")
+        json_response = File.read!("test/fixtures/room_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
@@ -160,7 +160,7 @@ defmodule DailyCoAPI.RoomTest do
         assert url == "https://api.daily.co/v1/rooms"
         assert_correct_headers(headers)
         assert body == "{\"name\":\"my-new-room\"}"
-        json_response = File.read!("test/daily_co_api/room_response.json")
+        json_response = File.read!("test/fixtures/room_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
@@ -175,7 +175,7 @@ defmodule DailyCoAPI.RoomTest do
         assert url == "https://api.daily.co/v1/rooms"
         assert_correct_headers(headers)
         assert body == "{}"
-        json_response = File.read!("test/daily_co_api/room_create_response.json")
+        json_response = File.read!("test/fixtures/room_create_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
@@ -280,7 +280,7 @@ defmodule DailyCoAPI.RoomTest do
         assert url == "https://api.daily.co/v1/rooms"
         assert_correct_headers(headers)
         assert body == ~s|{"name":"my-new-room","properties":{"exp":1000}}|
-        json_response = File.read!("test/daily_co_api/room_response.json")
+        json_response = File.read!("test/fixtures/room_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
@@ -295,7 +295,7 @@ defmodule DailyCoAPI.RoomTest do
         assert url == "https://api.daily.co/v1/rooms"
         assert_correct_headers(headers)
         assert body == ~s|{"name":"my-new-room","properties":{"exp":1000}}|
-        json_response = File.read!("test/daily_co_api/room_response.json")
+        json_response = File.read!("test/fixtures/room_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 

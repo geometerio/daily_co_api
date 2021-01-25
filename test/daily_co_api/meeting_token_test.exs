@@ -102,7 +102,7 @@ defmodule DailyCoAPI.MeetingTokenTest do
       expect(HTTPoisonMock, :get, fn url, headers ->
         assert url == "https://api.daily.co/v1/meeting-tokens/valid-meeting-token"
         assert_correct_headers(headers)
-        json_response = File.read!("test/daily_co_api/validated_meeting_token_response.json")
+        json_response = File.read!("test/fixtures/validated_meeting_token_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
