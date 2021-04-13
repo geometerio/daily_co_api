@@ -279,12 +279,12 @@ defmodule DailyCoAPI.RoomTest do
       expect(HTTPoisonMock, :post, fn url, body, headers ->
         assert url == "https://api.daily.co/v1/rooms"
         assert_correct_headers(headers)
-        assert body == ~s|{"name":"my-new-room","properties":{"exp":1000}}|
+        assert body == ~s|{"name":"my-new-room","properties":{"exp":1000,"start_audio_off":true,"start_video_off":true}}|
         json_response = File.read!("test/fixtures/room_response.json")
         {:ok, %HTTPoison.Response{status_code: 200, body: json_response}}
       end)
 
-      params = %{name: "my-new-room", exp: 1000}
+      params = %{name: "my-new-room", exp: 1000, start_audio_off: true, start_video_off: true}
 
       {:ok, room_data} = Room.create(params)
       assert room_data == expected_room_data()

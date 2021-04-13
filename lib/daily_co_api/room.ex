@@ -56,7 +56,7 @@ defmodule DailyCoAPI.Room do
     end
   end
 
-  @valid_create_params [:name, :exp]
+  @valid_create_params [:name, :exp, :start_audio_off, :start_video_off]
 
   @spec create(keyword() | map()) ::
           {:ok, DailyCoAPI.Room.t()}
@@ -158,9 +158,10 @@ defmodule DailyCoAPI.Room do
   end
 
   defp convert_to_proper_format(params) do
+    {name, params} = Map.pop(params, :name)
     %{
-      name: params[:name],
-      properties: %{exp: params[:exp]}
+      name: name,
+      properties: params
     }
   end
 

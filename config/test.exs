@@ -1,5 +1,6 @@
 import Config
 
 config :daily_co_api,
-  http_client: DailyCoAPI.HTTPoisonMock,
-  domain: "test-domain"
+  api_key: "testapikey",
+  domain: "test-domain",
+  http_client: DailyCoAPI.HTTPoisonMock
