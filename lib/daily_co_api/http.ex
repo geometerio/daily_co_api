@@ -1,6 +1,6 @@
 defmodule DailyCoAPI.HTTP do
-  @http_client Application.compile_env!(:daily_co_api, :http_client)
-  @daily_co_api_endpoint Application.compile_env!(:daily_co_api, :api_endpoint)
+  @http_client Application.compile_env(:daily_co_api, :http_client, HTTPoison)
+  @daily_co_api_endpoint Application.compile_env(:daily_co_api, :api_endpoint, "https://api.daily.co/v1/")
 
   def headers(), do: [Authorization: "Bearer #{daily_co_api_key()}"]
   def client(), do: @http_client
